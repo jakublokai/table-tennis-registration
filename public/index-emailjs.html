@@ -1179,7 +1179,7 @@
                     odoslatEmailOdregistrovania(registracia);
 
                     // Odstránenie registrácie z lokálnych dát
-                    registracie = registracie.filter(r => r.id !== registraciaId);
+                    registracie = registracie.filter(r => r._id !== registracia._id && r.id !== registraciaId);
 
                     // Uloženie do localStorage
                     saveData();
