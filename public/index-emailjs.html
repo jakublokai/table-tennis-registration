@@ -1193,7 +1193,7 @@
             .then(response => {
                 if (response && response.ok) {
                     // Odstránenie registrácie z lokálnych dát
-                    registracie = registracie.filter(r => r._id !== registracia._id && r.id !== registraciaId);
+                    registracie = registracie.filter(r => r._id !== registracia._id && r.id !== registracia.id && r.id !== registraciaId);
 
                     // Uloženie do localStorage
                     saveData();
@@ -1389,11 +1389,15 @@
                     // Aktualizácia lokálnych dát
                     const novaRegistracia = {
                         id: result.id,
+                        _id: result.id, // Pridáme aj _id pre kompatibilitu
                         ...data,
                         datum_registracie: new Date().toISOString()
                     };
 
                     registracie.push(novaRegistracia);
+
+                    // Uloženie do localStorage
+                    saveData();
 
                     // Aktualizácia kapacity termínu
                     const termin = terminy.find(t => t.id === data.termin_id);
