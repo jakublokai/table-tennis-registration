@@ -1109,7 +1109,7 @@
                     <div class="ucastnik-meno">${registracia.meno}</div>
                     <div class="ucastnik-datum">${registrationText} ${datumRegistracie}</div>
                 </div>
-                <button class="odregistrovat-btn" onclick="console.log('Tlačidlo kliknuté pre ID:', ${registracia.id}); odregistrovatUcastnika(${registracia.id})">
+                <button class="odregistrovat-btn" onclick="console.log('Tlačidlo kliknuté pre ID:', '${registracia._id || registracia.id}'); odregistrovatUcastnika('${registracia._id || registracia.id}')">
                     ${unregisterText}
                 </button>
             `;
@@ -1122,9 +1122,9 @@
             console.log('Odregistrovanie spustené pre ID:', registraciaId);
             
             console.log('Hľadám registráciu s ID:', registraciaId, 'typ:', typeof registraciaId);
-            console.log('Dostupné ID:', registracie.map(r => ({ id: r.id, type: typeof r.id })));
+            console.log('Dostupné ID:', registracie.map(r => ({ _id: r._id, id: r.id, type: typeof r._id })));
             
-            const registracia = registracie.find(r => r.id == registraciaId); // Použijem == namiesto === pre porovnanie string/number
+            const registracia = registracie.find(r => r._id == registraciaId || r.id == registraciaId); // Skontrolujem oba _id aj id
             if (!registracia) {
                 console.error('Registrácia nenájdená pre ID:', registraciaId);
                 return;
@@ -1166,10 +1166,10 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    id: registraciaId,
-                    email: zadanyEmail
-                })
+                                    body: JSON.stringify({
+                        id: registracia._id || registracia.id || registraciaId,
+                        email: zadanyEmail
+                    })
             })
             .then(response => {
                 if (response.ok) {
