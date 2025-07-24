@@ -1,17 +1,21 @@
 {
-  "name": "table-tennis-registration",
+  "name": "terminy-registracia-server",
   "version": "1.0.0",
-  "description": "Table Tennis Registration App with Netlify Functions",
-  "main": "index.html",
+  "description": "Server pre registráciu na stolný tenis s automatickými reminder emailmi",
+  "main": "server.js",
   "scripts": {
-    "dev": "netlify dev",
-    "build": "echo 'No build step needed'"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
-    "mongodb": "^5.0.0",
-    "@netlify/functions": "^2.0.0"
+    "express": "^4.18.2",
+    "nodemailer": "^6.9.7",
+    "node-cron": "^3.0.3"
   },
-  "keywords": ["table-tennis", "registration", "netlify", "mongodb"],
-  "author": "TESCAN",
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": ["stolný tenis", "registrácia", "email", "reminder"],
+  "author": "Stolný tenis Brno",
   "license": "MIT"
 } 

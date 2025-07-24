@@ -900,18 +900,11 @@
         let activeTab = 1;
         let currentLanguage = 'sk';
 
-        // Načítanie dát z Netlify Functions
-        async function loadData() {
-            try {
-                const response = await fetch('/.netlify/functions/get-registrations');
-                if (response.ok) {
-                    registracie = await response.json();
-                } else {
-                    registracie = [];
-                }
-            } catch (error) {
-                console.error('Chyba pri načítaní dát:', error);
-                registracie = [];
+        // Načítanie dát z localStorage
+        function loadData() {
+            const savedRegistracie = localStorage.getItem('tableTennisRegistracie');
+            if (savedRegistracie) {
+                registracie = JSON.parse(savedRegistracie);
             }
             
             const savedLanguage = localStorage.getItem('tableTennisLanguage');
@@ -923,45 +916,10 @@
             updateTerminyCapacity();
         }
 
-        // Pridanie registrácie cez Netlify Functions
-        async function addRegistration(registrationData) {
-            try {
-                const response = await fetch('/.netlify/functions/add-registration', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(registrationData)
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    return result.id;
-                } else {
-                    throw new Error('Failed to add registration');
-                }
-            } catch (error) {
-                console.error('Chyba pri pridávaní registrácie:', error);
-                throw error;
-            }
-        }
-
-        // Odstránenie registrácie cez Netlify Functions
-        async function deleteRegistration(id, email) {
-            try {
-                const response = await fetch('/.netlify/functions/delete-registration', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ id, email })
-                });
-                
-                return response.ok;
-            } catch (error) {
-                console.error('Chyba pri odstraňovaní registrácie:', error);
-                return false;
-            }
+        // Uloženie dát do localStorage
+        function saveData() {
+            localStorage.setItem('tableTennisRegistracie', JSON.stringify(registracie));
+            localStorage.setItem('tableTennisLanguage', currentLanguage);
         }
 
         // Aktualizácia kapacity termínov na základe registrácií
@@ -973,7 +931,7 @@
         }
 
         // Inicializácia aplikácie
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', function() {
             // Zobrazenie loading animácie
             showLoading();
             
@@ -986,7 +944,7 @@
             }
             
             // Načítanie uložených dát
-            await loadData();
+            loadData();
             
             // Simulácia načítania
             setTimeout(() => {
@@ -1143,7 +1101,7 @@
         }
 
         // Odregistrovanie účastníka
-        async function odregistrovatUcastnika(registraciaId) {
+        function odregistrovatUcastnika(registraciaId) {
             const registracia = registracie.find(r => r.id === registraciaId);
             if (!registracia) return;
 
@@ -1175,38 +1133,28 @@
                 return;
             }
 
-            try {
-                // Odstránenie registrácie cez Netlify Functions
-                const success = await deleteRegistration(registraciaId, registracia.email);
-                
-                if (success) {
-                    // Odoslanie emailu o odregistrovaní
-                    odoslatEmailOdregistrovania(registracia);
+            // Odoslanie emailu o odregistrovaní
+            odoslatEmailOdregistrovania(registracia);
 
-                    // Odstránenie registrácie z lokálnych dát
-                    registracie = registracie.filter(r => r.id !== registraciaId);
+            // Odstránenie registrácie
+            registracie = registracie.filter(r => r.id !== registraciaId);
 
-                    // Aktualizácia kapacity termínu
-                    const termin = terminy.find(t => t.id === registracia.termin_id);
-                    if (termin) {
-                        termin.aktualne_ucastnikov--;
-                    }
+            // Uloženie do localStorage
+            saveData();
 
-                    // Aktualizácia zobrazenia
-                    zobrazitTerminy();
-                    zobrazitTaby();
-                    zobrazitUcastnikov(activeTab);
-                    
-                    const successText = currentLanguage === 'sk' ? `Úspešne ste sa odregistrovali účastníka "${registracia.meno}".` : `Successfully unregistered participant "${registracia.meno}".`;
-                    showNotification(successText, 'success');
-                } else {
-                    const errorText = currentLanguage === 'sk' ? 'Chyba pri odregistrovaní. Skúste to znova.' : 'Unregistration error. Please try again.';
-                    showNotification(errorText, 'error');
-                }
-            } catch (error) {
-                const errorText = currentLanguage === 'sk' ? 'Chyba pri odregistrovaní. Skúste to znova.' : 'Unregistration error. Please try again.';
-                showNotification(errorText, 'error');
+            // Aktualizácia kapacity termínu
+            const termin = terminy.find(t => t.id === registracia.termin_id);
+            if (termin) {
+                termin.aktualne_ucastnikov--;
             }
+
+            // Aktualizácia zobrazenia
+            zobrazitTerminy();
+            zobrazitTaby();
+            zobrazitUcastnikov(activeTab);
+            
+            const successText = currentLanguage === 'sk' ? `Úspešne ste sa odregistrovali účastníka "${registracia.meno}".` : `Successfully unregistered participant "${registracia.meno}".`;
+            showNotification(successText, 'success');
         }
 
         // Vytvorenie karty termínu
@@ -1315,7 +1263,7 @@
         }
 
         // Spracovanie registrácie
-        async function handleRegistracia(event) {
+        function handleRegistracia(event) {
             event.preventDefault();
             
             const formData = new FormData(event.target);
@@ -1349,42 +1297,34 @@
                 return;
             }
 
-            try {
-                // Pridanie registrácie cez Netlify Functions
-                const registrationId = await addRegistration({
-                    ...data,
-                    datum_registracie: new Date().toISOString()
-                });
+            // Pridanie registrácie
+            const novaRegistracia = {
+                id: registracie.length + 1,
+                ...data,
+                datum_registracie: new Date().toISOString()
+            };
 
-                // Aktualizácia lokálnych dát
-                const novaRegistracia = {
-                    id: registrationId,
-                    ...data,
-                    datum_registracie: new Date().toISOString()
-                };
+            registracie.push(novaRegistracia);
 
-                registracie.push(novaRegistracia);
+            // Uloženie do localStorage
+            saveData();
 
-                // Aktualizácia kapacity termínu
-                const termin = terminy.find(t => t.id === data.termin_id);
-                if (termin) {
-                    termin.aktualne_ucastnikov++;
-                }
-
-                // Odoslanie emailu o registrácii
-                odoslatEmailRegistracie(novaRegistracia, selectedTermin);
-
-                const successText = currentLanguage === 'sk' ? 'Registrácia bola úspešná! Email s potvrdením bol odoslaný.' : 'Registration successful! Confirmation email has been sent.';
-                showNotification(successText, 'success');
-                event.target.reset();
-                zrusitRegistraciu();
-                zobrazitTerminy();
-                zobrazitTaby();
-                zobrazitUcastnikov(activeTab);
-            } catch (error) {
-                const errorText = currentLanguage === 'sk' ? 'Chyba pri registrácii. Skúste to znova.' : 'Registration error. Please try again.';
-                showNotification(errorText, 'error');
+            // Aktualizácia kapacity termínu
+            const termin = terminy.find(t => t.id === data.termin_id);
+            if (termin) {
+                termin.aktualne_ucastnikov++;
             }
+
+            // Odoslanie emailu o registrácii
+            odoslatEmailRegistracie(novaRegistracia, selectedTermin);
+
+            const successText = currentLanguage === 'sk' ? 'Registrácia bola úspešná! Email s potvrdením bol odoslaný.' : 'Registration successful! Confirmation email has been sent.';
+            showNotification(successText, 'success');
+            event.target.reset();
+            zrusitRegistraciu();
+            zobrazitTerminy();
+            zobrazitTaby();
+            zobrazitUcastnikov(activeTab);
         }
 
         // Odoslanie emailu o registrácii
