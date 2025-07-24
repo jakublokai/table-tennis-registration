@@ -3,7 +3,7 @@ const { MongoClient } = require('mongodb');
 const MONGODB_URI = process.env.MONGODB_URI;
 const DB_NAME = 'table-tennis-registration';
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -24,4 +24,4 @@ export default async function handler(req, res) {
     console.error('Error in get-registrations function:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
-} 
+}; 
