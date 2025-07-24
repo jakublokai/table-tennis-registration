@@ -1121,7 +1121,10 @@
         function odregistrovatUcastnika(registraciaId) {
             console.log('Odregistrovanie spustené pre ID:', registraciaId);
             
-            const registracia = registracie.find(r => r.id === registraciaId);
+            console.log('Hľadám registráciu s ID:', registraciaId, 'typ:', typeof registraciaId);
+            console.log('Dostupné ID:', registracie.map(r => ({ id: r.id, type: typeof r.id })));
+            
+            const registracia = registracie.find(r => r.id == registraciaId); // Použijem == namiesto === pre porovnanie string/number
             if (!registracia) {
                 console.error('Registrácia nenájdená pre ID:', registraciaId);
                 return;
