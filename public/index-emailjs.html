@@ -1144,25 +1144,9 @@
                 return;
             }
 
-            // Porovnanie emailov
-            if (zadanyEmail.toLowerCase().trim() !== registracia.email.toLowerCase().trim()) {
-                const errorText = currentLanguage === 'sk' ? 'Nesprávny email. Odregistrovanie nie je možné.' : 'Incorrect email. Unregistration is not possible.';
-                showNotification(errorText, 'error');
-                return;
-            }
-
-            // Potvrdenie odregistrovania
-            const confirmText = currentLanguage === 'sk' ? `Naozaj chcete odregistrovať účastníka "${registracia.meno}" z termínu?` : `Do you really want to unregister participant "${registracia.meno}" from the date?`;
-            const potvrdenie = confirm(confirmText);
-            if (!potvrdenie) {
-                const cancelText = currentLanguage === 'sk' ? 'Odregistrovanie bolo zrušené.' : 'Unregistration was cancelled.';
-                showNotification(cancelText, 'info');
-                return;
-            }
-
-                        // Volanie API pre vymazanie registrácie
-            console.log('Volám API endpoint /api/delete-registration');
-            fetch('/api/delete-registration?v=' + Date.now(), {
+            // Overenie emailu cez API (keďže email je maskovaný)
+            console.log('Overujem email cez API');
+            fetch('/api/verify-email?v=' + Date.now(), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1173,8 +1157,39 @@
                     email: zadanyEmail
                 })
             })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.valid) {
+                    const errorText = currentLanguage === 'sk' ? 'Nesprávny email. Odregistrovanie nie je možné.' : 'Incorrect email. Unregistration is not possible.';
+                    showNotification(errorText, 'error');
+                    return Promise.reject('Invalid email');
+                }
+
+                // Potvrdenie odregistrovania
+                const confirmText = currentLanguage === 'sk' ? `Naozaj chcete odregistrovať účastníka "${registracia.meno}" z termínu?` : `Do you really want to unregister participant "${registracia.meno}" from the date?`;
+                const potvrdenie = confirm(confirmText);
+                if (!potvrdenie) {
+                    const cancelText = currentLanguage === 'sk' ? 'Odregistrovanie bolo zrušené.' : 'Unregistration was cancelled.';
+                    showNotification(cancelText, 'info');
+                    return Promise.reject('Cancelled by user');
+                }
+
+                // Volanie API pre vymazanie registrácie
+                console.log('Volám API endpoint /api/delete-registration');
+                return fetch('/api/delete-registration?v=' + Date.now(), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    },
+                    body: JSON.stringify({
+                        id: registracia._id || registracia.id || registraciaId,
+                        email: zadanyEmail
+                    })
+                });
+            })
             .then(response => {
-                if (response.ok) {
+                if (response && response.ok) {
                     // Odstránenie registrácie z lokálnych dát
                     registracie = registracie.filter(r => r._id !== registracia._id && r.id !== registraciaId);
 
@@ -1194,7 +1209,7 @@
                     
                     const successText = currentLanguage === 'sk' ? `Úspešne ste sa odregistrovali účastníka "${registracia.meno}".` : `Successfully unregistered participant "${registracia.meno}".`;
                     showNotification(successText, 'success');
-                } else {
+                } else if (response) {
                     return response.json().then(errorData => {
                         const errorText = currentLanguage === 'sk' ? 
                             `Chyba pri odregistrovaní: ${errorData.error || 'Neznáma chyba'}` : 
@@ -1205,8 +1220,11 @@
             })
             .catch(error => {
                 console.error('Odregistrovanie error:', error);
-                const errorText = currentLanguage === 'sk' ? 'Chyba pri odregistrovaní. Skúste to znova.' : 'Unregistration error. Please try again.';
-                showNotification(errorText, 'error');
+                // Nezobrazujeme chybu ak je to očakávané zrušenie
+                if (error !== 'Invalid email' && error !== 'Cancelled by user') {
+                    const errorText = currentLanguage === 'sk' ? 'Chyba pri odregistrovaní. Skúste to znova.' : 'Unregistration error. Please try again.';
+                    showNotification(errorText, 'error');
+                }
             });
         }
 
