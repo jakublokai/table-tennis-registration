@@ -1160,16 +1160,16 @@
                 return;
             }
 
-            // Volanie API pre vymazanie registrácie
+                        // Volanie API pre vymazanie registrácie
             fetch('/api/delete-registration', {
-                method: 'DELETE',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                                    body: JSON.stringify({
-                        id: registracia._id || registracia.id || registraciaId,
-                        email: zadanyEmail
-                    })
+                body: JSON.stringify({
+                    id: registracia._id || registracia.id || registraciaId,
+                    email: zadanyEmail
+                })
             })
             .then(response => {
                 if (response.ok) {
