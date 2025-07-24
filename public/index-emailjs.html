@@ -1111,7 +1111,7 @@
         }
 
         // Odregistrovanie účastníka
-        async function odregistrovatUcastnika(registraciaId) {
+        function odregistrovatUcastnika(registraciaId) {
             const registracia = registracie.find(r => r.id === registraciaId);
             if (!registracia) return;
 
@@ -1143,19 +1143,18 @@
                 return;
             }
 
-            try {
-                // Volanie API pre vymazanie registrácie
-                const response = await fetch('/api/delete-registration', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        id: registraciaId,
-                        email: zadanyEmail
-                    })
-                });
-
+            // Volanie API pre vymazanie registrácie
+            fetch('/api/delete-registration', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: registraciaId,
+                    email: zadanyEmail
+                })
+            })
+            .then(response => {
                 if (response.ok) {
                     // Odoslanie emailu o odregistrovaní
                     odoslatEmailOdregistrovania(registracia);
@@ -1180,17 +1179,19 @@
                     const successText = currentLanguage === 'sk' ? `Úspešne ste sa odregistrovali účastníka "${registracia.meno}".` : `Successfully unregistered participant "${registracia.meno}".`;
                     showNotification(successText, 'success');
                 } else {
-                    const errorData = await response.json();
-                    const errorText = currentLanguage === 'sk' ? 
-                        `Chyba pri odregistrovaní: ${errorData.error || 'Neznáma chyba'}` : 
-                        `Unregistration error: ${errorData.error || 'Unknown error'}`;
-                    showNotification(errorText, 'error');
+                    return response.json().then(errorData => {
+                        const errorText = currentLanguage === 'sk' ? 
+                            `Chyba pri odregistrovaní: ${errorData.error || 'Neznáma chyba'}` : 
+                            `Unregistration error: ${errorData.error || 'Unknown error'}`;
+                        showNotification(errorText, 'error');
+                    });
                 }
-            } catch (error) {
+            })
+            .catch(error => {
                 console.error('Odregistrovanie error:', error);
                 const errorText = currentLanguage === 'sk' ? 'Chyba pri odregistrovaní. Skúste to znova.' : 'Unregistration error. Please try again.';
                 showNotification(errorText, 'error');
-            }
+            });
         }
 
         // Vytvorenie karty termínu
