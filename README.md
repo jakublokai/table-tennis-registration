@@ -1,6 +1,6 @@
 # 🏓 Registrácia na stolný tenis - Brno
 
-Moderná webová aplikácia pre registráciu na stolný tenis s automatickými emailmi.
+Moderná webová aplikácia pre registráciu na stolný tenis s automatickými emailmi a MongoDB databázou.
 
 ## ✨ Funkcie
 
@@ -10,25 +10,27 @@ Moderná webová aplikácia pre registráciu na stolný tenis s automatickými e
 - 📱 **Responsive** - Funguje na všetkých zariadeniach
 - 🎨 **Moderný dizajn** - Pekné animácie a UI
 - 📊 **Zoznam účastníkov** - S možnosťou odregistrovania
+- 🗄️ **MongoDB storage** - Globálne dostupné dáta
+- 🚀 **Deployment na Vercel** - Serverless funkcie
 
-## 🚀 Deployment na Netlify
+## 🚀 Deployment na Vercel
 
 ### Automatické nasadenie:
 1. **Forknite** tento repozitár
-2. **Pripojte** k Netlify
-3. **Nastavte** build settings:
-   - Build command: `(prázdne)`
-   - Publish directory: `.`
-4. **Deploy**!
+2. **Pripojte** k Vercel
+3. **Nastavte** environment variables:
+   - `MONGODB_URI`: vaša MongoDB connection string
+4. **Deploy!**
 
 ### Manuálne nasadenie:
 1. **Stiahnite** súbory
-2. **Uploadnite** na Netlify
-3. **Nastavte** custom domain (voliteľné)
+2. **Uploadnite** na Vercel
+3. **Nastavte** environment variables
+4. **Nastavte** custom domain (voliteľné)
 
 ## ⚙️ Nastavenie EmailJS
 
-1. **Zaregistrujte sa** na [emailjs.com](https://www.emailjs.com/)
+1. **Zaregistrujte sa** na [emailjs.com](https://emailjs.com)
 2. **Vytvorte Email Service** (Gmail)
 3. **Vytvorte Email Template** s premennými:
    - `{{to_name}}`, `{{to_email}}`
@@ -36,16 +38,26 @@ Moderná webová aplikácia pre registráciu na stolný tenis s automatickými e
    - `{{termin_cas}}`, `{{termin_miesto}}`
    - `{{calendar_start}}`, `{{calendar_end}}`
 4. **Skopírujte ID** do kódu:
-   - Public Key: `CtGw66qhSYvkYFsHF`
-   - Service ID: `service_wlv6ddn`
-   - Template ID: `template_q5q6pkg`
+   - **Public Key**: `CtGw66qhSYvkYFsHF`
+   - **Service ID**: `service_wlv6ddn`
+   - **Template ID**: `template_q5q6pkg`
+
+## ⚙️ Nastavenie MongoDB
+
+1. **Vytvorte** MongoDB Atlas cluster
+2. **Nastavte** Database Access a Network Access
+3. **Skopírujte** connection string
+4. **Pridajte** ako `MONGODB_URI` environment variable
 
 ## 📁 Súbory
 
 - `index-emailjs.html` - Hlavná aplikácia s emailmi
-- `index-simple.html` - Jednoduchá verzia bez emailov
-- `email-template.html` - Email template pre EmailJS
-- `netlify.toml` - Netlify konfigurácia
+- `api/` - Vercel API routes
+  - `add-registration.js` - Pridanie registrácie
+  - `get-registrations.js` - Získanie registrácií
+  - `delete-registration.js` - Odstránenie registrácie
+- `vercel.json` - Vercel konfigurácia
+- `package.json` - Dependencies
 
 ## 🎯 Použitie
 
@@ -57,11 +69,13 @@ Moderná webová aplikácia pre registráciu na stolný tenis s automatickými e
 
 ## 🔧 Technológie
 
-- **HTML5** + **CSS3** + **JavaScript**
-- **EmailJS** - Email služba
-- **Font Awesome** - Ikony
-- **Google Fonts** - Typografia
-- **Netlify** - Hosting
+- **Frontend**: HTML5 + CSS3 + JavaScript
+- **Backend**: Vercel Functions (Node.js)
+- **Database**: MongoDB Atlas
+- **Email**: EmailJS
+- **Icons**: Feather Icons
+- **Fonts**: Google Fonts
+- **Hosting**: Vercel
 
 ## 📧 Email funkcie
 
@@ -73,8 +87,8 @@ Moderná webová aplikácia pre registráciu na stolný tenis s automatickými e
 
 ## 🌐 Live demo
 
-[Vaša Netlify URL]
+[Vaša Vercel URL]
 
 ---
 
-**Vytvorené s ❤️ pre stolný tenis v Brne** 
+Vytvorené s ❤️ pre stolný tenis v Brne 
