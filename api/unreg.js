@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const DB_NAME = 'table-tennis-registration';
@@ -27,7 +27,19 @@ module.exports = async (req, res) => {
     const collection = db.collection('registrations');
     
     // Najprv nájdeme registráciu a overíme email
-    const registration = await collection.findOne({ _id: id });
+    // Konvertujeme string ID na ObjectId
+    let objectId;
+    try {
+      objectId = new ObjectId(id);
+    } catch (error) {
+      await client.close();
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+    
+    const registration = await collection.findOne({ _id: objectId });
     console.log('Found registration:', registration);
     
     if (!registration) {
@@ -47,7 +59,7 @@ module.exports = async (req, res) => {
     }
     
     // Vymazanie registrácie
-    await collection.deleteOne({ _id: id });
+    await collection.deleteOne({ _id: objectId });
     console.log('Registration deleted successfully');
     
     await client.close();
