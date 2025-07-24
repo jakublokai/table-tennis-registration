@@ -837,8 +837,11 @@
                 <span data-lang="sk">Zasielanie emailov aktívne</span><span data-lang="en" style="display: none;">Email sending active</span>
             </div>
             <br><br>
-            <button onclick="showAdminPanel()" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 12px; cursor: pointer; opacity: 0.7;">
+            <button onclick="showAdminPanel()" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 12px; cursor: pointer; opacity: 0.7; margin-right: 10px;">
                 <span data-lang="sk">Admin Panel</span><span data-lang="en" style="display: none;">Admin Panel</span>
+            </button>
+            <button onclick="zobrazitBackup()" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 12px; cursor: pointer; opacity: 0.7;">
+                <span data-lang="sk">Backup</span><span data-lang="en" style="display: none;">Backup</span>
             </button>
         </div>
 
@@ -1108,7 +1111,7 @@
         }
 
         // Odregistrovanie účastníka
-        function odregistrovatUcastnika(registraciaId) {
+        async function odregistrovatUcastnika(registraciaId) {
             const registracia = registracie.find(r => r.id === registraciaId);
             if (!registracia) return;
 
@@ -1140,28 +1143,54 @@
                 return;
             }
 
-            // Odoslanie emailu o odregistrovaní
-            odoslatEmailOdregistrovania(registracia);
+            try {
+                // Volanie API pre vymazanie registrácie
+                const response = await fetch('/api/delete-registration', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: registraciaId,
+                        email: zadanyEmail
+                    })
+                });
 
-            // Odstránenie registrácie
-            registracie = registracie.filter(r => r.id !== registraciaId);
+                if (response.ok) {
+                    // Odoslanie emailu o odregistrovaní
+                    odoslatEmailOdregistrovania(registracia);
 
-            // Uloženie do localStorage
-            saveData();
+                    // Odstránenie registrácie z lokálnych dát
+                    registracie = registracie.filter(r => r.id !== registraciaId);
 
-            // Aktualizácia kapacity termínu
-            const termin = terminy.find(t => t.id === registracia.termin_id);
-            if (termin) {
-                termin.aktualne_ucastnikov--;
+                    // Uloženie do localStorage
+                    saveData();
+
+                    // Aktualizácia kapacity termínu
+                    const termin = terminy.find(t => t.id === registracia.termin_id);
+                    if (termin) {
+                        termin.aktualne_ucastnikov--;
+                    }
+
+                    // Aktualizácia zobrazenia
+                    zobrazitTerminy();
+                    zobrazitTaby();
+                    zobrazitUcastnikov(activeTab);
+                    
+                    const successText = currentLanguage === 'sk' ? `Úspešne ste sa odregistrovali účastníka "${registracia.meno}".` : `Successfully unregistered participant "${registracia.meno}".`;
+                    showNotification(successText, 'success');
+                } else {
+                    const errorData = await response.json();
+                    const errorText = currentLanguage === 'sk' ? 
+                        `Chyba pri odregistrovaní: ${errorData.error || 'Neznáma chyba'}` : 
+                        `Unregistration error: ${errorData.error || 'Unknown error'}`;
+                    showNotification(errorText, 'error');
+                }
+            } catch (error) {
+                console.error('Odregistrovanie error:', error);
+                const errorText = currentLanguage === 'sk' ? 'Chyba pri odregistrovaní. Skúste to znova.' : 'Unregistration error. Please try again.';
+                showNotification(errorText, 'error');
             }
-
-            // Aktualizácia zobrazenia
-            zobrazitTerminy();
-            zobrazitTaby();
-            zobrazitUcastnikov(activeTab);
-            
-            const successText = currentLanguage === 'sk' ? `Úspešne ste sa odregistrovali účastníka "${registracia.meno}".` : `Successfully unregistered participant "${registracia.meno}".`;
-            showNotification(successText, 'success');
         }
 
         // Vytvorenie karty termínu
@@ -1508,6 +1537,60 @@
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
+        }
+
+        // Backup funkcie
+        async function zobrazitBackup() {
+            try {
+                showLoading();
+                const response = await fetch('/api/get-backup');
+                const data = await response.json();
+                
+                if (data.success) {
+                    zobrazitBackupModal(data);
+                } else {
+                    showNotification('Chyba pri načítaní backup dát', 'error');
+                }
+            } catch (error) {
+                console.error('Backup error:', error);
+                showNotification('Chyba pri načítaní backup dát', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function zobrazitBackupModal(data) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3>Backup registrácií</h3>
+                        <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="backup-stats">
+                            <h4>Štatistiky:</h4>
+                            <p>Celkové záznamy: ${data.stats.totalEntries}</p>
+                            <p>Registrácie: ${data.stats.registrations}</p>
+                            <p>Odregistrácie: ${data.stats.unregistrations}</p>
+                            <p>Posledný backup: ${data.stats.lastBackup ? new Date(data.stats.lastBackup).toLocaleString('sk-SK') : 'Žiadny'}</p>
+                        </div>
+                        
+                        <div class="backup-data">
+                            <h4>JSON Backup:</h4>
+                            <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px;">${JSON.stringify(data.backupData, null, 2)}</pre>
+                        </div>
+                        
+                        <div class="backup-log">
+                            <h4>Textový log:</h4>
+                            <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px; white-space: pre-wrap;">${data.logData || 'Žiadne logy'}</pre>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
         }
     </script>
 </body>

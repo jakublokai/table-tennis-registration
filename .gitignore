@@ -1,0 +1,23 @@
+# Backup files
+backup/
+*.log
+
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+.env.local
+
+# Vercel
+.vercel
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo 

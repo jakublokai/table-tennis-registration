@@ -1,4 +1,4 @@
-# 🏓 Table Tennis Registration
+# Table Tennis Registration
 
 Web application for registering participants to table tennis events at University Campus Bohunice, Brno.
 
@@ -19,6 +19,15 @@ Web application for registering participants to table tennis events at Universit
 - Email: EmailJS
 - Hosting: Vercel
 
----
+## Setup
+
+1. Clone the repository
+2. Configure EmailJS settings in the HTML files
+3. Deploy to Vercel
+4. Set up environment variables for MongoDB connection
+
+## Usage
+
+Participants can register for events by clicking on available dates and filling out their information. They will receive confirmation emails and can unregister themselves from the participant list.
 
 Built for TESCAN table tennis events in Brno. 
