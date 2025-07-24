@@ -595,6 +595,20 @@
             transform: translateY(-1px);
         }
 
+        .odregistrovat-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .refresh-note {
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            color: #718096;
+        }
+
         .prazdny-termin {
             text-align: center;
             color: #718096;
@@ -1111,9 +1125,15 @@
                     <div class="ucastnik-meno">${registracia.meno}</div>
                     <div class="ucastnik-datum">${registrationText} ${datumRegistracie}</div>
                 </div>
-                <button class="odregistrovat-btn" onclick="console.log('Tlačidlo kliknuté pre ID:', '${registracia._id || registracia.id}'); odregistrovatUcastnika('${registracia._id || registracia.id}')">
-                    ${unregisterText}
-                </button>
+                <div class="odregistrovat-container">
+                    <button class="odregistrovat-btn" onclick="console.log('Tlačidlo kliknuté pre ID:', '${registracia._id || registracia.id}'); odregistrovatUcastnika('${registracia._id || registracia.id}')" title="${currentLanguage === 'sk' ? 'Poznámka: Po registrácii je potrebné refreshnúť stránku (F5) pred odregistrovaním' : 'Note: After registration, refresh the page (F5) before unregistering'}">
+                        ${unregisterText}
+                    </button>
+                    <div class="refresh-note">
+                        <i data-feather="refresh-cw" style="width: 12px; height: 12px; color: #718096;"></i>
+                        <span style="font-size: 11px; color: #718096; margin-left: 4px;">${currentLanguage === 'sk' ? 'F5 po registrácii' : 'F5 after reg'}</span>
+                    </div>
+                </div>
             `;
             
             return item;
@@ -1146,25 +1166,9 @@
                 return;
             }
 
-            // Najprv skontrolujeme lokálne dáta
-            if (zadanyEmail.toLowerCase().trim() !== registracia.email.toLowerCase().trim()) {
-                const errorText = currentLanguage === 'sk' ? 'Nesprávny email. Odregistrovanie nie je možné.' : 'Incorrect email. Unregistration is not possible.';
-                showNotification(errorText, 'error');
-                return;
-            }
-
-            // Potvrdenie odregistrovania
-            const confirmText = currentLanguage === 'sk' ? `Naozaj chcete odregistrovať účastníka "${registracia.meno}" z termínu?` : `Do you really want to unregister participant "${registracia.meno}" from the date?`;
-            const potvrdenie = confirm(confirmText);
-            if (!potvrdenie) {
-                const cancelText = currentLanguage === 'sk' ? 'Odregistrovanie bolo zrušené.' : 'Unregistration was cancelled.';
-                showNotification(cancelText, 'info');
-                return;
-            }
-
-            // Volanie API pre vymazanie registrácie
-            console.log('Volám API endpoint /api/delete-registration');
-            fetch('/api/delete-registration?v=' + Date.now(), {
+            // Overenie emailu cez API (keďže email je maskovaný)
+            console.log('Overujem email cez API');
+            fetch('/api/verify-email?v=' + Date.now(), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1174,6 +1178,37 @@
                     id: registracia._id || registracia.id || registraciaId,
                     email: zadanyEmail
                 })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.valid) {
+                    const errorText = currentLanguage === 'sk' ? 'Nesprávny email. Odregistrovanie nie je možné.' : 'Incorrect email. Unregistration is not possible.';
+                    showNotification(errorText, 'error');
+                    return Promise.reject('Invalid email');
+                }
+
+                // Potvrdenie odregistrovania
+                const confirmText = currentLanguage === 'sk' ? `Naozaj chcete odregistrovať účastníka "${registracia.meno}" z termínu?` : `Do you really want to unregister participant "${registracia.meno}" from the date?`;
+                const potvrdenie = confirm(confirmText);
+                if (!potvrdenie) {
+                    const cancelText = currentLanguage === 'sk' ? 'Odregistrovanie bolo zrušené.' : 'Unregistration was cancelled.';
+                    showNotification(cancelText, 'info');
+                    return Promise.reject('Cancelled by user');
+                }
+
+                // Volanie API pre vymazanie registrácie
+                console.log('Volám API endpoint /api/delete-registration');
+                return fetch('/api/delete-registration?v=' + Date.now(), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    },
+                    body: JSON.stringify({
+                        id: registracia._id || registracia.id || registraciaId,
+                        email: zadanyEmail
+                    })
+                });
             })
             .then(response => {
                 if (response && response.ok) {
@@ -1207,8 +1242,11 @@
             })
             .catch(error => {
                 console.error('Odregistrovanie error:', error);
-                const errorText = currentLanguage === 'sk' ? 'Chyba pri odregistrovaní. Skúste to znova.' : 'Unregistration error. Please try again.';
-                showNotification(errorText, 'error');
+                // Nezobrazujeme chybu ak je to očakávané zrušenie
+                if (error !== 'Invalid email' && error !== 'Cancelled by user') {
+                    const errorText = currentLanguage === 'sk' ? 'Chyba pri odregistrovaní. Skúste to znova.' : 'Unregistration error. Please try again.';
+                    showNotification(errorText, 'error');
+                }
             });
         }
 
