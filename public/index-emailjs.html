@@ -906,10 +906,13 @@
         // Načítanie dát z Vercel API
         async function loadData() {
             try {
+                console.log('Načítavam dáta z API...');
                 const response = await fetch('/api/get-registrations');
                 if (response.ok) {
                     registracie = await response.json();
+                    console.log('Načítané registrácie:', registracie);
                 } else {
+                    console.error('API response not ok:', response.status);
                     registracie = [];
                 }
             } catch (error) {
@@ -1030,8 +1033,12 @@
 
         // Zobrazenie účastníkov pre vybraný termín
         function zobrazitUcastnikov(terminId) {
+            console.log('Zobrazujem účastníkov pre termín:', terminId);
+            console.log('Aktuálne registrácie:', registracie);
+            
             const container = document.getElementById('ucastnici-container');
             const terminUcastnici = registracie.filter(r => r.termin_id === terminId);
+            console.log('Filtrované registrácie pre termín', terminId, ':', terminUcastnici);
             
             if (terminUcastnici.length === 0) {
                 const emptyText = currentLanguage === 'sk' ? 'Zatiaľ nie sú žiadne registrácie pre tento termín.' : 'No registrations for this date yet.';
