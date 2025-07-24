@@ -1,0 +1,17 @@
+{
+  "name": "table-tennis-registration",
+  "version": "1.0.0",
+  "description": "Table Tennis Registration App with Netlify Functions",
+  "main": "index.html",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'No build step needed'"
+  },
+  "dependencies": {
+    "mongodb": "^5.0.0",
+    "@netlify/functions": "^2.0.0"
+  },
+  "keywords": ["table-tennis", "registration", "netlify", "mongodb"],
+  "author": "TESCAN",
+  "license": "MIT"
+} 

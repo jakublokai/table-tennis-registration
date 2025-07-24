@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrácia na stolný tenis - Brno | Zabezpečená verzia</title>
+    <meta name="description" content="Registrácia na stolný tenis v Brne. 4 termíny, automatické emaily, zabezpečené odregistrovanie. Univerzitný kampus Bohunice.">
+    <meta name="keywords" content="stolný tenis, brno, registrácia, bohunice, emailjs">
+    <meta name="author" content="Stolný tenis Brno">
+    <meta property="og:title" content="Registrácia na stolný tenis - Brno">
+    <meta property="og:description" content="Registrácia na stolný tenis v Brne s automatickými emailmi">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-domain.netlify.app">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏓</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header h1 i {
+            margin-right: 15px;
+            color: #ffd700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .terminy-section {
+            padding: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #2d3748;
+            text-align: center;
+        }
+
+        .terminy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .termin-card {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .termin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .termin-card.plny {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            border-color: #fc8181;
+            cursor: not-allowed;
+        }
+
+        .termin-card.plny:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .termin-nazov {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .termin-info {
+            margin-bottom: 20px;
+        }
+
+        .termin-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+
+        .termin-info-item i {
+            width: 20px;
+            margin-right: 10px;
+            color: #667eea;
+        }
+
+        .termin-kapacita {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .kapacita-bar {
+            flex: 1;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .kapacita-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+            transition: width 0.3s ease;
+        }
+
+        .termin-card.plny .kapacita-fill {
+            background: linear-gradient(90deg, #f56565 0%, #e53e3e 100%);
+        }
+
+        .registracia-section {
+            display: none;
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .registracia-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .ucastnici-section {
+            padding: 40px;
+            background: #f8fafc;
+        }
+
+        .ucastnici-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .termin-tab {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+            text-align: left;
+        }
+
+        .termin-tab.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .termin-tab-header {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .termin-tab-date {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .termin-tab-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .termin-tab-capacity {
+            font-weight: 600;
+        }
+
+        .termin-tab-status {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .termin-tab-status.available {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .termin-tab-status.full {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .termin-tab-progress {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .termin-tab-progress-fill {
+            height: 100%;
+            background: #48bb78;
+            transition: width 0.3s ease;
+        }
+
+        .termin-tab.active .termin-tab-progress-fill {
+            background: white;
+        }
+
+        .ucastnici-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            min-height: 200px;
+        }
+
+        .ucastnik-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.3s ease;
+        }
+
+        .ucastnik-item:last-child {
+            border-bottom: none;
+        }
+
+        .ucastnik-item:hover {
+            background: #f7fafc;
+        }
+
+        .ucastnik-info {
+            flex: 1;
+        }
+
+        .ucastnik-meno {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .ucastnik-email {
+            color: #667eea;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+        }
+
+        .ucastnik-datum {
+            color: #718096;
+            font-size: 0.8rem;
+        }
+
+        .odregistrovat-btn {
+            background: #fed7d7;
+            color: #742a2a;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .odregistrovat-btn:hover {
+            background: #feb2b2;
+        }
+
+        .prazdny-termin {
+            text-align: center;
+            color: #718096;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #48bb78;
+        }
+
+        .notification.error {
+            background: #f56565;
+        }
+
+        .notification.info {
+            background: #4299e1;
+        }
+
+        .odregistrovanie-section {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .odregistrovanie-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .security-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .security-notice h3 {
+            margin-bottom: 10px;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .terminy-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ucastnici-tabs {
+                flex-direction: column;
+            }
+            
+            .termin-tab {
+                min-width: auto;
+            }
+            
+            .ucastnik-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-table-tennis"></i>Stolný tenis Brno</h1>
+            <p>Registrácia na termíny - Zabezpečená verzia</p>
+        </div>
+
+        <div class="main-content">
+            <div class="terminy-section">
+                <h2 class="section-title">📅 Dostupné termíny</h2>
+                <div class="terminy-grid" id="terminy-grid"></div>
+                
+                <div class="registracia-section" id="registracia-section">
+                    <h3>Registrácia na termín</h3>
+                    <div id="selected-termin-info"></div>
+                    <form class="registracia-form" id="registracia-form">
+                        <div class="form-group">
+                            <label for="meno">Meno a priezvisko *</label>
+                            <input type="text" id="meno" name="meno" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i>Registrovať sa
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="zrusitRegistraciu()">
+                                <i class="fas fa-times"></i>Zrušiť
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="ucastnici-section">
+                <h2 class="section-title">👥 Účastníci</h2>
+                <div class="ucastnici-tabs" id="terminy-tabs"></div>
+                <div class="ucastnici-container" id="ucastnici-container"></div>
+            </div>
+
+            <div class="odregistrovanie-section">
+                <h2 class="section-title">❌ Odregistrovanie</h2>
+                <div class="security-notice">
+                    <h3><i class="fas fa-shield-alt"></i> Zabezpečenie</h3>
+                    <p>Pre odregistrovanie potrebujete zadať email, ktorý ste použili pri registrácii. Môžete sa odregistrovať len zo svojich vlastných registrácií.</p>
+                </div>
+                <form class="odregistrovanie-form" id="odregistrovanie-form">
+                    <div class="form-group">
+                        <label for="odregistrovanie-email">Váš email *</label>
+                        <input type="email" id="odregistrovanie-email" name="email" required placeholder="Zadajte email použitý pri registrácii">
+                    </div>
+                    <div class="form-buttons">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>Nájsť moje registrácie
+                        </button>
+                    </div>
+                </form>
+                <div id="moje-registracie" style="display: none; margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // EmailJS inicializácia
+        emailjs.init("YOUR_USER_ID"); // Nahraďte svojím User ID
+
+        // Dáta
+        let terminy = [
+            {
+                id: 1,
+                nazov: "Termín 1",
+                datum: "2024-07-29",
+                cas: "17:00 - 19:00",
+                miesto: "Univerzitný kampus Bohunice, Brno",
+                max_ucastnikov: 24,
+                aktualne_ucastnikov: 0
+            },
+            {
+                id: 2,
+                nazov: "Termín 2",
+                datum: "2024-08-12", 
+                cas: "17:00 - 19:00",
+                miesto: "Univerzitný kampus Bohunice, Brno",
+                max_ucastnikov: 24,
+                aktualne_ucastnikov: 0
+            },
+            {
+                id: 3,
+                nazov: "Termín 3",
+                datum: "2024-08-19",
+                cas: "17:00 - 19:00",
+                miesto: "Univerzitný kampus Bohunice, Brno",
+                max_ucastnikov: 24,
+                aktualne_ucastnikov: 0
+            },
+            {
+                id: 4,
+                nazov: "Termín 4",
+                datum: "2024-08-26",
+                cas: "17:00 - 19:00",
+                miesto: "Univerzitný kampus Bohunice, Brno",
+                max_ucastnikov: 24,
+                aktualne_ucastnikov: 0
+            }
+        ];
+
+        let registracie = [];
+        let selectedTermin = null;
+        let activeTab = 1;
+
+        // Inicializácia
+        document.addEventListener('DOMContentLoaded', function() {
+            zobrazitTerminy();
+            zobrazitTaby();
+            zobrazitUcastnikov(activeTab);
+            
+            // Event listeners
+            document.getElementById('registracia-form').addEventListener('submit', handleRegistracia);
+            document.getElementById('odregistrovanie-form').addEventListener('submit', handleOdregistrovanie);
+        });
+
+        // Zobrazenie termínov
+        function zobrazitTerminy() {
+            const grid = document.getElementById('terminy-grid');
+            grid.innerHTML = '';
+            
+            terminy.forEach(termin => {
+                const card = createTerminCard(termin);
+                grid.appendChild(card);
+            });
+        }
+
+        // Vytvorenie karty termínu
+        function createTerminCard(termin) {
+            const card = document.createElement('div');
+            card.className = `termin-card ${termin.aktualne_ucastnikov >= termin.max_ucastnikov ? 'plny' : ''}`;
+            
+            const kapacitaPercent = Math.round((termin.aktualne_ucastnikov / termin.max_ucastnikov) * 100);
+            const isPlny = termin.aktualne_ucastnikov >= termin.max_ucastnikov;
+            
+            card.innerHTML = `
+                <div class="termin-nazov">${termin.nazov}</div>
+                <div class="termin-info">
+                    <div class="termin-info-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>${formatDatum(termin.datum)}</span>
+                    </div>
+                    <div class="termin-info-item">
+                        <i class="fas fa-clock"></i>
+                        <span>${termin.cas}</span>
+                    </div>
+                    <div class="termin-info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>${termin.miesto}</span>
+                    </div>
+                </div>
+                <div class="termin-kapacita">
+                    <span>${termin.aktualne_ucastnikov}/${termin.max_ucastnikov} účastníkov</span>
+                    <div class="kapacita-bar">
+                        <div class="kapacita-fill" style="width: ${kapacitaPercent}%"></div>
+                    </div>
+                    <span>${kapacitaPercent}%</span>
+                </div>
+            `;
+
+            if (!isPlny) {
+                card.addEventListener('click', () => selectTermin(termin));
+            }
+
+            return card;
+        }
+
+        // Výber termínu
+        function selectTermin(termin) {
+            selectedTermin = termin;
+            showRegistraciaSection();
+        }
+
+        // Zobrazenie sekcie registrácie
+        function showRegistraciaSection() {
+            const registraciaSection = document.getElementById('registracia-section');
+            const selectedTerminInfo = document.getElementById('selected-termin-info');
+            
+            selectedTerminInfo.innerHTML = `
+                <h3>${selectedTermin.nazov}</h3>
+                <div class="termin-info-item">
+                    <i class="fas fa-calendar"></i>
+                    <span><strong>Dátum:</strong> ${formatDatum(selectedTermin.datum)}</span>
+                </div>
+                <div class="termin-info-item">
+                    <i class="fas fa-clock"></i>
+                    <span><strong>Čas:</strong> ${selectedTermin.cas}</span>
+                </div>
+                <div class="termin-info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span><strong>Miesto:</strong> ${selectedTermin.miesto}</span>
+                </div>
+                <div class="termin-info-item">
+                    <i class="fas fa-users"></i>
+                    <span><strong>Dostupné miesta:</strong> ${selectedTermin.max_ucastnikov - selectedTermin.aktualne_ucastnikov}</span>
+                </div>
+            `;
+            
+            registraciaSection.style.display = 'block';
+            registraciaSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Zrušenie registrácie
+        function zrusitRegistraciu() {
+            selectedTermin = null;
+            document.getElementById('registracia-section').style.display = 'none';
+            document.getElementById('registracia-form').reset();
+        }
+
+        // Spracovanie registrácie
+        function handleRegistracia(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = {
+                termin_id: selectedTermin.id,
+                meno: formData.get('meno'),
+                email: formData.get('email')
+            };
+
+            // Validácia
+            if (!data.meno.trim() || !data.email.trim()) {
+                showNotification('Prosím vyplňte všetky povinné polia', 'error');
+                return;
+            }
+
+            if (!isValidEmail(data.email)) {
+                showNotification('Prosím zadajte platný email', 'error');
+                return;
+            }
+
+            // Kontrola či sa už používateľ registroval
+            const existujucaRegistracia = registracie.find(r => 
+                r.termin_id === data.termin_id && r.email === data.email
+            );
+
+            if (existujucaRegistracia) {
+                showNotification('Už ste registrovaní na tento termín', 'error');
+                return;
+            }
+
+            // Pridanie registrácie
+            const novaRegistracia = {
+                id: registracie.length + 1,
+                ...data,
+                datum_registracie: new Date().toISOString()
+            };
+
+            registracie.push(novaRegistracia);
+
+            // Aktualizácia kapacity termínu
+            const termin = terminy.find(t => t.id === data.termin_id);
+            if (termin) {
+                termin.aktualne_ucastnikov++;
+            }
+
+            // Odoslanie emailu o registrácii
+            odoslatEmailRegistracie(novaRegistracia, selectedTermin);
+
+            showNotification('Registrácia bola úspešná! Email s potvrdením bol odoslaný.', 'success');
+            event.target.reset();
+            zrusitRegistraciu();
+            zobrazitTerminy();
+            zobrazitTaby();
+            zobrazitUcastnikov(activeTab);
+        }
+
+        // Spracovanie odregistrovania
+        function handleOdregistrovanie(event) {
+            event.preventDefault();
+            
+            const email = event.target.email.value.trim();
+            
+            if (!email) {
+                showNotification('Prosím zadajte email', 'error');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                showNotification('Prosím zadajte platný email', 'error');
+                return;
+            }
+
+            // Hľadanie registrácií pre daný email
+            const mojeRegistracie = registracie.filter(r => r.email === email);
+            
+            if (mojeRegistracie.length === 0) {
+                showNotification('Pre tento email neboli nájdené žiadne registrácie', 'info');
+                return;
+            }
+
+            zobrazitMojeRegistracie(mojeRegistracie);
+        }
+
+        // Zobrazenie mojich registrácií
+        function zobrazitMojeRegistracie(mojeRegistracie) {
+            const container = document.getElementById('moje-registracie');
+            
+            let html = '<h3>Vaše registrácie:</h3>';
+            mojeRegistracie.forEach(registracia => {
+                const termin = terminy.find(t => t.id === registracia.termin_id);
+                const datumRegistracie = new Date(registracia.datum_registracie).toLocaleDateString('sk-SK');
+                
+                html += `
+                    <div class="ucastnik-item">
+                        <div class="ucastnik-info">
+                            <div class="ucastnik-meno">${registracia.meno}</div>
+                            <div class="ucastnik-email">${registracia.email}</div>
+                            <div class="ucastnik-datum">Registrácia: ${datumRegistracie}</div>
+                            <div style="margin-top: 5px; color: #667eea; font-weight: 500;">
+                                ${termin.nazov} - ${formatDatum(termin.datum)}
+                            </div>
+                        </div>
+                        <button class="odregistrovat-btn" onclick="odregistrovatUcastnika(${registracia.id})">
+                            <i class="fas fa-times"></i> Odregistrovať
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
+        // Odregistrovanie účastníka
+        function odregistrovatUcastnika(registraciaId) {
+            const registracia = registracie.find(r => r.id === registraciaId);
+            if (!registracia) return;
+
+            // Odoslanie emailu o odregistrovaní
+            odoslatEmailOdregistrovania(registracia);
+
+            // Odstránenie registrácie
+            registracie = registracie.filter(r => r.id !== registraciaId);
+
+            // Aktualizácia kapacity termínu
+            const termin = terminy.find(t => t.id === registracia.termin_id);
+            if (termin) {
+                termin.aktualne_ucastnikov--;
+            }
+
+            // Aktualizácia zobrazenia
+            zobrazitTerminy();
+            zobrazitTaby();
+            zobrazitUcastnikov(activeTab);
+            
+            // Skrytie sekcie mojich registrácií
+            document.getElementById('moje-registracie').style.display = 'none';
+            document.getElementById('odregistrovanie-form').reset();
+            
+            showNotification('Účastník bol úspešne odregistrovaný.', 'success');
+        }
+
+        // Zobrazenie tabov
+        function zobrazitTaby() {
+            const tabsContainer = document.getElementById('terminy-tabs');
+            tabsContainer.innerHTML = '';
+
+            terminy.forEach(termin => {
+                const kapacitaPercent = Math.round((termin.aktualne_ucastnikov / termin.max_ucastnikov) * 100);
+                const isFull = termin.aktualne_ucastnikov >= termin.max_ucastnikov;
+                const availableSpots = termin.max_ucastnikov - termin.aktualne_ucastnikov;
+                
+                const tab = document.createElement('button');
+                tab.className = `termin-tab ${termin.id === activeTab ? 'active' : ''}`;
+                
+                tab.innerHTML = `
+                    <div class="termin-tab-header">Termín ${termin.id}</div>
+                    <div class="termin-tab-date">${formatDatum(termin.datum)}</div>
+                    <div class="termin-tab-stats">
+                        <span class="termin-tab-capacity">${termin.aktualne_ucastnikov}/${termin.max_ucastnikov}</span>
+                        <span class="termin-tab-status ${isFull ? 'full' : 'available'}">
+                            ${isFull ? 'PLNÝ' : `${availableSpots} miest`}
+                        </span>
+                    </div>
+                    <div class="termin-tab-progress">
+                        <div class="termin-tab-progress-fill" style="width: ${kapacitaPercent}%"></div>
+                    </div>
+                `;
+                
+                tab.onclick = () => {
+                    activeTab = termin.id;
+                    zobrazitTaby();
+                    zobrazitUcastnikov(termin.id);
+                };
+                tabsContainer.appendChild(tab);
+            });
+        }
+
+        // Zobrazenie účastníkov pre vybraný termín
+        function zobrazitUcastnikov(terminId) {
+            const container = document.getElementById('ucastnici-container');
+            const terminUcastnici = registracie.filter(r => r.termin_id === terminId);
+            
+            if (terminUcastnici.length === 0) {
+                container.innerHTML = '<div class="prazdny-termin">Zatiaľ nie sú žiadne registrácie pre tento termín.</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            terminUcastnici.forEach(registracia => {
+                const item = createUcastnikItem(registracia);
+                container.appendChild(item);
+            });
+        }
+
+        // Vytvorenie položky účastníka (len na zobrazenie)
+        function createUcastnikItem(registracia) {
+            const item = document.createElement('div');
+            item.className = 'ucastnik-item';
+            
+            const termin = terminy.find(t => t.id === registracia.termin_id);
+            const datumRegistracie = new Date(registracia.datum_registracie).toLocaleDateString('sk-SK');
+            
+            item.innerHTML = `
+                <div class="ucastnik-info">
+                    <div class="ucastnik-meno">${registracia.meno}</div>
+                    <div class="ucastnik-email">${registracia.email}</div>
+                    <div class="ucastnik-datum">Registrácia: ${datumRegistracie}</div>
+                </div>
+                <div style="color: #718096; font-size: 0.9rem;">
+                    <i class="fas fa-info-circle"></i> Odregistrovanie cez sekciu nižšie
+                </div>
+            `;
+            
+            return item;
+        }
+
+        // Odoslanie emailu o registrácii
+        function odoslatEmailRegistracie(registracia, termin) {
+            const eventDate = new Date(termin.datum);
+            const [startHour, startMinute] = termin.cas.split(' - ')[0].split(':');
+            const [endHour, endMinute] = termin.cas.split(' - ')[1].split(':');
+            
+            const startDate = new Date(eventDate);
+            startDate.setHours(parseInt(startHour), parseInt(startMinute), 0);
+            
+            const endDate = new Date(eventDate);
+            endDate.setHours(parseInt(endHour), parseInt(endMinute), 0);
+            
+            const formatCalendarDate = (date) => {
+                return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+            };
+            
+            const templateParams = {
+                to_email: registracia.email,
+                to_name: registracia.meno,
+                termin_nazov: termin.nazov,
+                termin_datum: formatDatum(termin.datum),
+                termin_cas: termin.cas,
+                termin_miesto: termin.miesto,
+                calendar_start: formatCalendarDate(startDate),
+                calendar_end: formatCalendarDate(endDate),
+                message: 'Potvrdenie registrácie - Stolný tenis'
+            };
+
+            emailjs.send('service_wlv6ddn', 'template_q5q6pkg', templateParams)
+                .then(function(response) {
+                    console.log('✅ Email o registrácii bol odoslaný na:', registracia.email);
+                }, function(error) {
+                    console.error('❌ Chyba pri odosielaní emailu:', error);
+                    showNotification('Email sa nepodarilo odoslať, ale registrácia bola úspešná.', 'info');
+                });
+        }
+
+        // Odoslanie emailu o odregistrovaní
+        function odoslatEmailOdregistrovania(registracia) {
+            const termin = terminy.find(t => t.id === registracia.termin_id);
+            
+            const templateParams = {
+                to_email: registracia.email,
+                to_name: registracia.meno,
+                termin_nazov: termin.nazov,
+                termin_datum: formatDatum(termin.datum),
+                termin_cas: termin.cas,
+                termin_miesto: termin.miesto,
+                message: 'Odregistrovanie - Stolný tenis'
+            };
+
+            emailjs.send('service_wlv6ddn', 'template_q5q6pkg', templateParams)
+                .then(function(response) {
+                    console.log('✅ Email o odregistrovaní bol odoslaný na:', registracia.email);
+                }, function(error) {
+                    console.error('❌ Chyba pri odosielaní emailu:', error);
+                });
+        }
+
+        // Pomocné funkcie
+        function formatDatum(datum) {
+            const date = new Date(datum);
+            return date.toLocaleDateString('sk-SK', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 

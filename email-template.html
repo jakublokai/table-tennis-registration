@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Stolný tenis TESCAN</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .event-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea; }
+        .calendar-buttons, .navigation-buttons { text-align: center; margin: 20px 0; }
+        .btn { display: inline-block; padding: 12px 24px; margin: 5px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .btn-google { background: #4285f4; color: white; }
+        .btn-outlook { background: #0078d4; color: white; }
+        .btn-maps { background: #34a853; color: white; }
+        .btn-apple-maps { background: #007aff; color: white; }
+        .important-info { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .contact-info { background: #e8f5e8; border: 1px solid #4caf50; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏓 Potvrdenie registrácie - Stolný tenis TESCAN</h1>
+        <p>Ahoj {{to_name}}!</p>
+    </div>
+
+    <div class="content">
+        <p>Ďakujeme za registráciu na stolný tenis! Tu sú detaily vašej registrácie:</p>
+
+        <div class="event-info">
+            <h3>{{termin_nazov}}</h3>
+            <p><strong>📅 Dátum:</strong> {{termin_datum}}</p>
+            <p><strong>🕐 Čas:</strong> {{termin_cas}}</p>
+            <p><strong>📍 Miesto:</strong> {{termin_miesto}}</p>
+        </div>
+
+        <div class="calendar-buttons">
+            <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Stolný tenis&dates={{calendar_start}}/{{calendar_end}}&details=Stretneme sa 10 min pred začiatkom na recepcii. Vezmite si športové oblečenie. Rakety nie sú k dispozícii, len loptičky.&location={{termin_miesto}}" class="btn btn-google">
+                📅 Pridať do Google Calendar
+            </a>
+            <a href="https://outlook.live.com/calendar/0/deeplink/compose?subject=Stolný tenis&startdt={{calendar_start}}&enddt={{calendar_end}}&body=Stretneme sa 10 min pred začiatkom na recepcii. Vezmite si športové oblečenie. Rakety nie sú k dispozícii, len loptičky.&location={{termin_miesto}}" class="btn btn-outlook">
+                📅 Pridať do Outlook Calendar
+            </a>
+        </div>
+
+        <div class="navigation-buttons">
+            <a href="https://maps.google.com/?q=Fakulta+sportovních+studií+MU+Kamenice+753/5+Brno-Bohunice" class="btn btn-maps">
+                🗺️ Otvoriť v Google Maps
+            </a>
+            <a href="https://maps.apple.com/?q=Fakulta+sportovních+studií+MU+Kamenice+753/5+Brno-Bohunice" class="btn btn-apple-maps">
+                🗺️ Otvoriť v Apple Maps
+            </a>
+        </div>
+
+        <div class="important-info">
+            <h4>⚠️ Dôležité informácie:</h4>
+            <ul>
+                <li><strong>Stretneme sa 10 minút pred začiatkom na recepcii</strong></li>
+                <li><strong>Vezmite si športové oblečenie</strong></li>
+                <li><strong>Rakety nie sú k dispozícii</strong> - len loptičky sú dostupné</li>
+                <li>Príďte včas, aby sme stihli všetko pripraviť</li>
+            </ul>
+        </div>
+
+        <div class="contact-info">
+            <h4>📞 Kontakt:</h4>
+            <p>V prípade otázok kontaktujte:</p>
+            <ul>
+                <li><strong>Jiří Fiala - jiri.fiala@tescan.com</strong></li>
+                <li><strong>Tomáš Hrnčíř - tomas.hrncir@tescan.com</strong></li>
+            </ul>
+        </div>
+
+        <p style="margin-top: 30px; padding: 15px; background: #e8f5e8; border-radius: 6px; border-left: 4px solid #4caf50;">
+            <strong>💡 Tip:</strong> Nezabudnite si vziať športové oblečenie a vodu! Tešíme sa na vašu účasť!
+        </p>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 Stolný tenis - TESCAN</p>
+        <p>in electrons, we trust</p>
+    </div>
+</body>
+</html>
