@@ -1175,9 +1175,6 @@
             })
             .then(response => {
                 if (response.ok) {
-                    // Odoslanie emailu o odregistrovaní
-                    odoslatEmailOdregistrovania(registracia);
-
                     // Odstránenie registrácie z lokálnych dát
                     registracie = registracie.filter(r => r._id !== registracia._id && r.id !== registraciaId);
 
@@ -1443,28 +1440,7 @@
                 });
         }
 
-        // Odoslanie emailu o odregistrovaní
-        function odoslatEmailOdregistrovania(registracia) {
-            const termin = terminy.find(t => t.id === registracia.termin_id);
-            
-            const templateParams = {
-                to_email: registracia.email,
-                to_name: registracia.meno,
-                termin_nazov: termin.nazov,
-                termin_datum: formatDatum(termin.datum),
-                termin_cas: termin.cas,
-                termin_miesto: termin.miesto,
-                message: 'Odregistrovanie - Stolný tenis'
-            };
 
-            // NASTAVENÉ - EmailJS (rovnaký template pre odregistrovanie)
-            emailjs.send('service_wlv6ddn', 'template_q5q6pkg', templateParams)
-                .then(function(response) {
-                    console.log('✅ Email o odregistrovaní bol odoslaný na:', registracia.email);
-                }, function(error) {
-                    console.error('❌ Chyba pri odosielaní emailu:', error);
-                });
-        }
 
 
 
