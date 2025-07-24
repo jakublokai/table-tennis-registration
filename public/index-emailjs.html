@@ -1102,7 +1102,7 @@
                     <div class="ucastnik-meno">${registracia.meno}</div>
                     <div class="ucastnik-datum">${registrationText} ${datumRegistracie}</div>
                 </div>
-                <button class="odregistrovat-btn" onclick="odregistrovatUcastnika(${registracia.id})">
+                <button class="odregistrovat-btn" onclick="console.log('Tlačidlo kliknuté pre ID:', ${registracia.id}); odregistrovatUcastnika(${registracia.id})">
                     ${unregisterText}
                 </button>
             `;
@@ -1112,8 +1112,15 @@
 
         // Odregistrovanie účastníka
         function odregistrovatUcastnika(registraciaId) {
+            console.log('Odregistrovanie spustené pre ID:', registraciaId);
+            
             const registracia = registracie.find(r => r.id === registraciaId);
-            if (!registracia) return;
+            if (!registracia) {
+                console.error('Registrácia nenájdená pre ID:', registraciaId);
+                return;
+            }
+            
+            console.log('Našiel som registráciu:', registracia);
 
             // Overenie emailu
             const promptText = currentLanguage === 'sk' ? 
