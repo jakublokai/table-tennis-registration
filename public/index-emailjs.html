@@ -644,6 +644,8 @@
             z-index: 1000;
             transform: translateX(400px);
             transition: transform 0.3s ease;
+            cursor: pointer;
+            user-select: none;
         }
 
         .notification.show {
@@ -1544,13 +1546,28 @@
         // Zobrazenie notifikácie
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
+            
+            // Vyčistíme predchádzajúce notifikácie
+            notification.classList.remove('show');
+            
+            // Nastavíme obsah a typ
             notification.textContent = message;
             notification.className = `notification ${type}`;
-            notification.classList.add('show');
             
+            // Pridáme možnosť zatvoriť kliknutím
+            notification.onclick = function() {
+                this.classList.remove('show');
+            };
+            
+            // Zobrazíme notifikáciu
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Skryjeme po 5 sekundách (predĺžené)
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 3000);
+            }, 5000);
         }
 
         // Backup funkcie
