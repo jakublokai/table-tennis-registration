@@ -18,6 +18,7 @@ module.exports = async (req, res) => {
 
   try {
     const { id, email } = req.body;
+    console.log('Remove request:', { id, email });
     
     const client = new MongoClient(MONGODB_URI);
     await client.connect();
@@ -27,11 +28,12 @@ module.exports = async (req, res) => {
     
     // Najprv nájdeme registráciu a overíme email
     const registration = await collection.findOne({ _id: id });
+    console.log('Found registration:', registration);
     
     if (!registration) {
       await client.close();
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
       return res.status(404).json({ error: 'Registration not found' });
     }
@@ -39,31 +41,14 @@ module.exports = async (req, res) => {
     if (registration.email !== email) {
       await client.close();
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
       return res.status(403).json({ error: 'Email does not match' });
     }
     
-    // Backup odregistrácie do lokálneho súboru
-    try {
-        const backupResponse = await fetch(`${req.headers.host ? `https://${req.headers.host}` : 'http://localhost:3000'}/api/backup-unregistration`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ registracia: registration })
-        });
-        
-        if (!backupResponse.ok) {
-            console.warn('Backup failed but registration was deleted from database');
-        }
-    } catch (backupError) {
-        console.warn('Backup error:', backupError);
-        // Pokračujeme aj keď backup zlyhá
-    }
-    
     // Vymazanie registrácie
     await collection.deleteOne({ _id: id });
+    console.log('Registration deleted successfully');
     
     await client.close();
     
@@ -74,7 +59,7 @@ module.exports = async (req, res) => {
     
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error in delete-registration function:', error);
+    console.error('Error in remove function:', error);
     
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');

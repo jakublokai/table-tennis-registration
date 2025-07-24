@@ -1161,8 +1161,8 @@
             }
 
                         // Volanie API pre vymazanie registrácie
-            console.log('Volám API endpoint /api/unreg');
-            fetch('/api/unreg?v=' + Date.now(), {
+            console.log('Volám API endpoint /api/delete-registration');
+            fetch('/api/delete-registration?v=' + Date.now(), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
