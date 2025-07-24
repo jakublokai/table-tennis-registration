@@ -616,35 +616,7 @@
             padding: 40px;
         }
 
-        .admin-panel {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
 
-        .admin-panel h3 {
-            color: #2d3748;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #0052cc;
-            padding-bottom: 10px;
-        }
-
-        .admin-panel h4 {
-            color: #4a5568;
-            margin: 15px 0 10px 0;
-        }
-
-        .admin-panel ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        .admin-panel li {
-            margin-bottom: 5px;
-            color: #4a5568;
-        }
 
         .notification {
             position: fixed;
@@ -852,13 +824,7 @@
             <div class="email-status-bar" style="background: -webkit-linear-gradient(90deg, #0052cc, #0747a6); background: -moz-linear-gradient(90deg, #0052cc, #0747a6); background: linear-gradient(90deg, #0052cc, #0747a6); color: white; padding: 8px 15px; border-radius: 20px; display: inline-block; font-size: 14px; font-weight: 500; box-shadow: 0 2px 8px rgba(0, 82, 204, 0.3);">
                 <span data-lang="sk">Zasielanie emailov aktívne</span><span data-lang="en" style="display: none;">Email sending active</span>
             </div>
-            <br><br>
-            <button onclick="showAdminPanel()" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 12px; cursor: pointer; opacity: 0.7; margin-right: 10px;">
-                <span data-lang="sk">Admin Panel</span><span data-lang="en" style="display: none;">Admin Panel</span>
-            </button>
-            <button onclick="zobrazitBackup()" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 12px; cursor: pointer; opacity: 0.7;">
-                <span data-lang="sk">Backup</span><span data-lang="en" style="display: none;">Backup</span>
-            </button>
+
         </div>
 
         <!-- Notifikácie -->
@@ -1069,45 +1035,7 @@
             });
         }
 
-        // Admin funkcia - zobrazenie všetkých registrácií s emailmi
-        function showAdminPanel() {
-            const adminPassword = prompt(currentLanguage === 'sk' ? 'Zadajte admin heslo:' : 'Enter admin password:');
-            if (adminPassword !== 'admin123') { // Jednoduché heslo pre demo
-                showNotification(currentLanguage === 'sk' ? 'Nesprávne heslo!' : 'Incorrect password!', 'error');
-                return;
-            }
 
-            let adminHTML = '<div class="admin-panel">';
-            adminHTML += `<h3>${currentLanguage === 'sk' ? 'Admin Panel - Všetky registrácie' : 'Admin Panel - All Registrations'}</h3>`;
-            
-            terminy.forEach(termin => {
-                const terminRegistracie = registracie.filter(r => r.termin_id === termin.id);
-                adminHTML += `<h4>${termin.nazov} (${terminRegistracie.length}/${termin.max_ucastnikov})</h4>`;
-                
-                if (terminRegistracie.length === 0) {
-                    adminHTML += '<p>Žiadne registrácie</p>';
-                } else {
-                    adminHTML += '<ul>';
-                    terminRegistracie.forEach(reg => {
-                        adminHTML += `<li><strong>${reg.meno}</strong> - ${reg.email} (${new Date(reg.datum_registracie).toLocaleDateString()})</li>`;
-                    });
-                    adminHTML += '</ul>';
-                }
-            });
-            
-            adminHTML += '</div>';
-            
-            // Zobrazenie v modálnom okne
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                    ${adminHTML}
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
 
         // Vytvorenie položky účastníka
         function createUcastnikItem(registracia) {
@@ -1594,59 +1522,7 @@
             }, 5000);
         }
 
-        // Backup funkcie
-        async function zobrazitBackup() {
-            try {
-                showLoading();
-                const response = await fetch('/api/get-backup');
-                const data = await response.json();
-                
-                if (data.success) {
-                    zobrazitBackupModal(data);
-                } else {
-                    showNotification('Chyba pri načítaní backup dát', 'error');
-                }
-            } catch (error) {
-                console.error('Backup error:', error);
-                showNotification('Chyba pri načítaní backup dát', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
 
-        function zobrazitBackupModal(data) {
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
-                    <div class="modal-header">
-                        <h3>Backup registrácií</h3>
-                        <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
-                    </div>
-                    <div class="modal-body">
-                        <div class="backup-stats">
-                            <h4>Štatistiky:</h4>
-                            <p>Celkové záznamy: ${data.stats.totalEntries}</p>
-                            <p>Registrácie: ${data.stats.registrations}</p>
-                            <p>Odregistrácie: ${data.stats.unregistrations}</p>
-                            <p>Posledný backup: ${data.stats.lastBackup ? new Date(data.stats.lastBackup).toLocaleString('sk-SK') : 'Žiadny'}</p>
-                        </div>
-                        
-                        <div class="backup-data">
-                            <h4>JSON Backup:</h4>
-                            <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px;">${JSON.stringify(data.backupData, null, 2)}</pre>
-                        </div>
-                        
-                        <div class="backup-log">
-                            <h4>Textový log:</h4>
-                            <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px; white-space: pre-wrap;">${data.logData || 'Žiadne logy'}</pre>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-        }
     </script>
 </body>
 </html> 
